@@ -4,7 +4,14 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 
-const TablePokemon = ({ data = [] }) => {
+const TablePokemon = ( data ) => {
+
+  const { pokemon } = data
+
+  console.log(pokemon)
+ 
+ 
+  return (
   <Table size="small">
     <TableHead>
       <TableRow>
@@ -15,19 +22,14 @@ const TablePokemon = ({ data = [] }) => {
       </TableRow>
     </TableHead>
  
-    <TableBody>
-      {
-        data && data.map((item) => (
-          <TableRow key={item.id}>
-            <TableCell>{item.weight}</TableCell>
-            <TableCell>{item.moves}</TableCell>
-            <TableCell>{item.types[0]}</TableCell>
-            <TableCell>{item.types[1]}</TableCell>
+   {pokemon && <TableBody>
+          <TableRow key={pokemon?.id}  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+            <TableCell>{pokemon?.weight}</TableCell>
+            <TableCell>{pokemon?.moves.length}</TableCell>
+            <TableCell>{pokemon?.types[0]?.type?.name}</TableCell>
+            <TableCell>{pokemon?.types[1]?.type?.name}</TableCell>
           </TableRow>
-        ))
-      }
-
-    </TableBody>
-  </Table>
+    </TableBody>}
+  </Table>)
 }
 export default TablePokemon;

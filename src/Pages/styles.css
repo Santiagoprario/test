@@ -1,0 +1,37 @@
+.Container {
+  display: flex;
+  flex-direction: column;
+}
+
+
+.SearchBar {
+  display: flex;
+  flex-direction: row;
+  align-content: flex-start;
+  justify-content: center;
+  padding: 10px;
+}
+
+.InputSelect {
+  width: 200px;
+  padding-right: 30px;
+}
+
+.PokemonImage {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 160px;
+  width: 160px;
+}
+
+.TableContainer {
+  margin: 50px;
+  justify-content: center;
+}
+
+.AbilityContainer {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+}

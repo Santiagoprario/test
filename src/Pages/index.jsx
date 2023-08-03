@@ -1,22 +1,39 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Grid from '@mui/material/Grid';
 import { TextField } from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
 import TablePokemon from './../components/Table';
-import { getDataFromApi } from '../API';
+import './styles.css';
 
 
 const PokemonSearch =  () => {
   const [ typePokemon, setTypePokemon] = useState('');
-  const [ data, setData ] = useState([]);
-  const [ loading, setLoading ] = useState(true)
+  const [ loading, setLoading ] = useState(true);
+  const [ changeAbility, setChangeability ] = useState(false);
 
-  // const dataFiltered = typePokemon ? data?.filter((pok) => pok.types[0] === typePokemon) : data
+  const [ pokemonDetails, setPokemonDetails ] = useState();
 
-  // const renderPokemon = data?.filter((pok) => pok.name === '')
+  const [, setResult] = useState([]);
+  const [poke, setPoke] = useState([]);
+  const arr = [];
 
-  console.log(data)
+  useEffect(() => {
+    fetch('https://pokeapi.co/api/v2/pokemon/?limit=100')
+      .then((response) => response.json())
+      .then((data) => setResult(
+      data.results.map((item) => {
+      fetch(item.url)
+        .then((response) => response.json())
+        .then((allpokemon) => arr.push(allpokemon));
+      }),
+      ));
+    setPoke(arr);
+    setLoading(false)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const dataFiltered = poke?.filter((pok) => pok.types[0].type.name === typePokemon)
 
   const optionsSelector = [
     {
@@ -31,59 +48,78 @@ const PokemonSearch =  () => {
       label: 'Grass',
       value: 'grass',
     },
+    {
+      label: 'Elegir tipo',
+      value: '',
+    },
   ];
 
   const handleChange = (ev) => {
       setTypePokemon(ev.target.value)
   }
 
-  const handleSearch = (ev) => {
-    console.log(ev.target.value)
+  const handleChangeAbility = () => {
+    setChangeability(!changeAbility)
   }
 
-  useEffect(() => {
-    async function fetchData () {
-      const response = await getDataFromApi()
-      setData(response)
-      setLoading(false)
-    }
-    fetchData()
-  }, []) 
+  setInterval(() => handleChangeAbility(), 100000)
 
+  const ability = useMemo(() => {
+    // if (!pokemonDetails || !pokemonDetails?.abilities[0]?.name) return '';
+    return pokemonDetails?.abilities[Math.floor(Math.random() * pokemonDetails?.abilities?.length)]?.ability.name
+  }, [changeAbility])
 
 
 
   return (
-    <Grid container >
+    <div className='Container'>
+      {loading ? <div>Cargando...</div>
+        : (
+      <div className='SearchBar'>
+        <div className='PokemonImage'>
+          <img src={pokemonDetails?.sprites.front_default || "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"} style={{width: '150px', height: '150px'}}/>
+        </div>
+        <div className='InputSelect' >
+          <Select
+            label="Type"
+            value={typePokemon}
+            defaultValue=''
+            onChange={handleChange}
+            fullWidth
+          >
+            {optionsSelector.map(({ label, value }) => (
+              <MenuItem key={value} value={value}>{label}</MenuItem>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <Autocomplete
+            disablePortal
+            options={dataFiltered}
+            getOptionLabel={(option) => option.name}
+            onChange={(event, newValue) => {
+              setPokemonDetails(newValue);
+            }}
 
-  {loading ? <div>Cargando...</div>
-     : (
-     <>
-          <Grid container direction='row' spacing={3}>
-            <Grid item xs={6}>
-              <Select
-                label="Type"
-                placeholder='Buscar por tipo de pokemon'
-                value={typePokemon}
-                onChange={handleChange}
-                fullWidth
-              >
-                {optionsSelector.map(({ label, value }) => (
-                  <MenuItem key={value} value={value}>{label}</MenuItem>
-                ))}
-              </Select>
-            </Grid>
-            <Grid item xs={6}>
-              <TextField label='Pokemón' fullWidth onChange={handleSearch}/>
-            </Grid>
-          </Grid>  
-        <Grid>
-          <TablePokemon />
-        </Grid>
-       </>) 
+            style={{ width: 300 }}
+            renderInput={(params) => <TextField {...params} key={params.id} label="Pokemón" variant="outlined" />}
+          />
+        </div>
+      </div>         
+      )}
+      {!!pokemonDetails &&  
+        <div className='TableContainer'>
+          <TablePokemon pokemon={pokemonDetails} />
+        </div>
       }
-      
-    </Grid>
+      {!!pokemonDetails && 
+        <div className='AbilityContainer'>
+          <h1>Random Ability: </h1>
+          <h2>{ability}</h2>
+        </div>
+      }
+        
+    </div>
   );
 };
 
